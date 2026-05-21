@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+  Ned2 + adaptive gripper (gripper1) + head-mount Kinect v2.
+  Built for the push + PnP tasks where the gripper joints matter.
+
+  Niryo ships ONE Ned2 gripper URDF: niryo_ned2_gripper1_n_camera.urdf.xacro.
+  That file is the adaptive gripper (gripper1, the standard accessory
+  per https://docs.niryo.com/accessories/grippers/adaptive-gripper/)
+  bundled with Niryo's built-in wrist camera. The chain is:
+
+    niryo_ned2_gripper1_n_camera.urdf.xacro
+      → niryo_ned2_camera.urdf.xacro
+          → niryo_ned2_gazebo.urdf.xacro
+              → niryo_ned2.urdf.xacro            (arm links + joints)
+              → niryo_ned2.transmission.xacro    (transmissions)
+          + Gazebo plugin for ros_control
+        + wrist camera link + Gazebo camera plugin (publishes /gazebo_camera/*)
+      + gripper links (mors_1, mors_2 — prismatic, ±10 mm stroke)
+      + mors transmissions (SimpleTransmissionEffort, joints 7 + 8)
+      + Gazebo joint_state_publisher plugin
+        (needed so /joint_states includes the mors joints — the
+         joint_state_controller alone wouldn't pick them up under
+         the gripper namespace)
+
+  We add the head-mount Kinect on top. The wrist camera comes along
+  for the ride from Niryo's URDF; we just don't subscribe to it.
+-->
+<!-- Robot name MUST match Niryo's SRDF (niryo_ned2). -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="niryo_ned2">
+
+    <xacro:include filename="$(find niryo_robot_description)/urdf/ned2/niryo_ned2_gripper1_n_camera.urdf.xacro"/>
+
+    <xacro:include filename="$(find common_sensors)/urdf/sensors/kinect2.urdf.xacro"/>
+    <xacro:kinect2 name="head_mount_kinect2" parent="world">
+        <origin rpy="0 0.3 3.15" xyz="1.4 -0.08 0.2"/>
+    </xacro:kinect2>
+
+</robot>

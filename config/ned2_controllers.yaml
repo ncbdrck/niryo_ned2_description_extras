@@ -1,0 +1,59 @@
+# ros_control config for the Ned2 in Gazebo. Ported from
+# niryo_robot_moveit_config/niryo_moveit_config_standalone/config/ned2/ros_controllers.yaml
+# so the same controller name + joint set is used in sim and on real hardware
+# (niryo_robot_bringup loads its own copy for hardware).
+#
+# Why this file exists: niryo_robot_gazebo/launch/gazebo.launch only
+# spawns the URDF — it doesn't bring up ros_control, so /joint_states
+# isn't published and the niryo_robot_follow_joint_trajectory_controller
+# isn't available. RL envs need both.
+
+# Settings for ros_control control loop. 25 Hz matches the real Ned2
+# default ROS control loop frequency.
+hardware_control_loop:
+    loop_hz: 25
+
+# Publish all joint states.
+joint_state_controller:
+    type: "joint_state_controller/JointStateController"
+    publish_rate: 50
+
+# Joint Trajectory Controller (position-based) — accepts
+# trajectory_msgs/JointTrajectory on
+# /niryo_robot_follow_joint_trajectory_controller/command.
+niryo_robot_follow_joint_trajectory_controller:
+    type: "position_controllers/JointTrajectoryController"
+    joints:
+        - joint_1
+        - joint_2
+        - joint_3
+        - joint_4
+        - joint_5
+        - joint_6
+    constraints:
+        goal_time: 1.0
+        stopped_velocity_tolerance: 0.05
+        joint_1: { trajectory: 0.5, goal: 0.2 }
+        joint_2: { trajectory: 0.5, goal: 0.2 }
+        joint_3: { trajectory: 0.5, goal: 0.2 }
+        joint_4: { trajectory: 0.5, goal: 0.2 }
+        joint_5: { trajectory: 1.0, goal: 0.3 }
+        joint_6: { trajectory: 1.0, goal: 0.3 }
+    stop_trajectory_duration: 1.0
+    state_publish_rate: 20
+    allow_partial_joints_goal: true
+    action_monitor_rate: 10
+
+# Per-joint PID gains used by gazebo_ros_control. Required because
+# Niryo's transmissions are EffortJointInterface — Gazebo converts
+# commanded position → effort via these PID terms. Without them the
+# arm just sags under gravity and ignores commands. Values copied
+# from niryo_robot_moveit_config/.../w_gripper1/config/ned2/ros_controllers.yaml
+# (Niryo's own MoveIt sim defaults).
+gazebo_ros_control/pid_gains:
+    joint_1: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_2: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_3: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_4: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_5: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_6: { p: 100, d: 1, i: 1, i_clamp: 1 }

@@ -1,0 +1,74 @@
+<launch>
+  <!--
+    Full Gazebo bring-up for the Ned2 sim:
+      * world: interbotix_xsarm_gazebo/worlds/xsarm_gazebo.world
+        (reused from RX200 for visual consistency)
+      * table: reactorx200_description/models/table/model.sdf at origin
+      * robot: URDF (kinect or kinect+gripper) spawned at z=0.78
+      * ros_control: joint_state + niryo_robot_follow_joint_trajectory_controller
+        (+ gazebo_tool_commander when gripper:=true)
+
+    Use gripper:=true for push / PnP, false (default) for reach.
+
+    Verify with:
+      roslaunch niryo_ned2_description_extras ned2_gazebo.launch
+      roslaunch niryo_ned2_description_extras ned2_gazebo.launch gripper:=true
+
+      rostopic echo /joint_states         # should publish at 50 Hz
+      rostopic list | grep niryo_robot_follow_joint_trajectory_controller
+      # with gripper:=true also:
+      rostopic list | grep gazebo_tool_commander
+  -->
+
+  <arg name="paused"   default="false"/>
+  <arg name="gui"      default="true"/>
+  <arg name="gripper"  default="false"
+       doc="If true, load the gripper1 (adaptive) URDF + mors controllers."/>
+  <arg name="table_z"  default="0.78"/>
+
+  <!-- Pick URDF + controllers config based on gripper arg. -->
+  <arg name="urdf"
+       value="$(find niryo_ned2_description_extras)/urdf/ned2_kinect_gripper.urdf.xacro"
+       if="$(arg gripper)"/>
+  <arg name="urdf"
+       value="$(find niryo_ned2_description_extras)/urdf/ned2_kinect.urdf.xacro"
+       unless="$(arg gripper)"/>
+
+  <!-- 1. Gazebo world (same one RX200 uses). -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find interbotix_xsarm_gazebo)/worlds/xsarm_gazebo.world"/>
+    <arg name="gui"        value="$(arg gui)"/>
+    <arg name="paused"     value="$(arg paused)"/>
+  </include>
+
+  <!-- 2. Table (reused from reactorx200_description). -->
+  <node name="spawn_table" pkg="gazebo_ros" type="spawn_model"
+        args="-file $(find reactorx200_description)/models/table/model.sdf -sdf -model table -x 0 -y 0 -z 0"/>
+
+  <!-- 3. Robot description (Ned2 + head-mount kinect ± gripper). -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(arg urdf)'"/>
+
+  <!-- 4. Spawn Ned2 on the table top. -->
+  <node name="ned2_spawn" pkg="gazebo_ros" type="spawn_model"
+        respawn="false" output="screen"
+        args="-urdf -param robot_description -model ned2 -z $(arg table_z)"/>
+
+  <!-- 5. State publisher (publishes TF from /joint_states). -->
+  <node name="robot_state_publisher"
+        pkg="robot_state_publisher"
+        type="robot_state_publisher"
+        output="screen"/>
+
+  <!-- 6. Niryo's required /calibrated flag (downstream nodes wait for it). -->
+  <node name="fake_joint_calibration"
+        pkg="rostopic" type="rostopic"
+        args="pub /calibrated std_msgs/Bool true"
+        output="log"/>
+
+  <!-- 7. ros_control + controller spawn (auto-select YAML + spawn list). -->
+  <include file="$(find niryo_ned2_description_extras)/launch/ned2_control.launch">
+    <arg name="gripper" value="$(arg gripper)"/>
+  </include>
+
+</launch>

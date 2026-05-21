@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+  Niryo Ned2 sim base. Wraps the upstream camera URDF (which itself
+  includes the gazebo URDF → arm URDF + transmissions + ros_control
+  plugin). Niryo's built-in wrist camera is enabled by default — it
+  matches the real hardware and gives downstream RL envs the option
+  of EE-mounted perception without re-deriving URDF variants.
+
+  Topic: /gazebo_camera/{image_raw, camera_info, ...} on frame_id
+  "camera_link" (mounted on wrist_link via niryo_ned2_camera.urdf.xacro).
+
+  No gripper here — that's added in ned2_kinect_gripper.urdf.xacro.
+  This file suits reach + push tasks (push uses the closed gripper /
+  wrist as a flat pusher).
+
+  Mount-agnostic: the world joint in niryo_ned2.urdf.xacro sits at
+  (0,0,0); the Gazebo spawn launch lifts the whole arm onto the table
+  via spawn_model -z 0.78.
+-->
+<!-- Robot name MUST match Niryo's SRDF (niryo_ned2) so MoveIt's
+     planning_scene_monitor accepts it. Otherwise you get
+     "Semantic description is not specified for the same robot as
+     the URDF" and the SRDF disjoint-set won't load. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="niryo_ned2">
+
+    <xacro:include filename="$(find niryo_robot_description)/urdf/ned2/niryo_ned2_camera.urdf.xacro"/>
+
+</robot>

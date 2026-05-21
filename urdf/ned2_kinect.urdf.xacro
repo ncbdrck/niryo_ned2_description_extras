@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  Ned2 + head-mount Kinect v2. Mount position copied from
+  reactorx200_description/urdf/rx200_kinect.urdf.xacro so the visual
+  setup is identical across robots — same camera-to-workspace
+  geometry, same cube tracker tuning carries over.
+
+  Tweak the <origin> on <xacro:kinect2> if you mount the physical
+  kinect somewhere else; the RL envs subscribe to /head_mount_kinect2/*
+  regardless of pose.
+-->
+<!-- Robot name MUST match Niryo's SRDF (niryo_ned2). -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="niryo_ned2">
+
+    <xacro:include filename="$(find niryo_ned2_description_extras)/urdf/ned2.urdf.xacro"/>
+
+    <xacro:include filename="$(find common_sensors)/urdf/sensors/kinect2.urdf.xacro"/>
+    <xacro:kinect2 name="head_mount_kinect2" parent="world">
+        <origin rpy="0 0.3 3.15" xyz="1.4 -0.08 0.2"/>
+    </xacro:kinect2>
+
+</robot>

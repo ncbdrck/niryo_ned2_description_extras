@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>niryo_ned2_description_extras</name>
+  <version>0.1.0</version>
+  <description>
+    Niryo Ned2 sim extras for the rl_environments stack: mounts the
+    Ned2 on the same desk model the RX200 sim uses, adds a head-mount
+    Kinect v2 for cube tracking, and brings up ros_control so the
+    niryo_robot_follow_joint_trajectory_controller works in Gazebo.
+
+    Mirrors reactorx200_description's role — keeps RL packages free
+    of URDF / mesh / launch noise while letting the description ship
+    independently for MoveIt / RViz / standalone simulation.
+  </description>
+
+  <maintainer email="j.kapukotuwa@research.ait.ie">Jay Kapukotuwa</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Upstream URDF + meshes (Niryo arm) -->
+  <exec_depend>niryo_robot_description</exec_depend>
+  <!-- Table model + textures, reused as-is -->
+  <exec_depend>reactorx200_description</exec_depend>
+  <!-- Kinect v2 xacro -->
+  <exec_depend>common_sensors</exec_depend>
+
+  <!-- Gazebo + ros_control runtime -->
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>joint_state_controller</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <!-- World file (xsarm_gazebo.world reused for visual consistency) -->
+  <exec_depend>interbotix_xsarm_gazebo</exec_depend>
+</package>

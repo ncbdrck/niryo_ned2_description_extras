@@ -1,0 +1,69 @@
+# ros_control config for the Ned2 + adaptive gripper (gripper1) in Gazebo.
+# Adds the gripper-specific controllers on top of the arm-only config.
+# Ported from niryo_robot_moveit_config/niryo_moveit_config_w_gripper1/
+# config/ned2/ros_controllers.yaml.
+#
+# Load this YAML INSTEAD of ned2_controllers.yaml when launching with
+# gripper:=true. The launch file makes that choice automatically.
+
+# 25 Hz matches the real Ned2 default ROS control loop frequency.
+hardware_control_loop:
+    loop_hz: 25
+
+joint_state_controller:
+    type: "joint_state_controller/JointStateController"
+    publish_rate: 50
+
+# Arm trajectory controller (joints 1-6, position-based) — accepts
+# trajectory_msgs/JointTrajectory on
+# /niryo_robot_follow_joint_trajectory_controller/command.
+niryo_robot_follow_joint_trajectory_controller:
+    type: "position_controllers/JointTrajectoryController"
+    joints:
+        - joint_1
+        - joint_2
+        - joint_3
+        - joint_4
+        - joint_5
+        - joint_6
+    constraints:
+        goal_time: 1.0
+        stopped_velocity_tolerance: 0.05
+        joint_1: { trajectory: 0.5, goal: 0.2 }
+        joint_2: { trajectory: 0.5, goal: 0.2 }
+        joint_3: { trajectory: 0.5, goal: 0.2 }
+        joint_4: { trajectory: 0.5, goal: 0.2 }
+        joint_5: { trajectory: 1.0, goal: 0.3 }
+        joint_6: { trajectory: 1.0, goal: 0.3 }
+    stop_trajectory_duration: 1.0
+    state_publish_rate: 20
+    allow_partial_joints_goal: true
+    action_monitor_rate: 10
+
+# Gripper effort-based trajectory controller — drives the two mors
+# prismatic joints. Niryo's tool_commander_node bridges between the
+# user-facing ToolCommand (OPEN_GRIPPER / CLOSE_GRIPPER) and this
+# action server. In sim, the env can either use the bridge or talk
+# to gazebo_tool_commander/follow_joint_trajectory directly.
+gazebo_tool_commander:
+    type: "effort_controllers/JointTrajectoryController"
+    joints:
+        - joint_base_to_mors_1
+        - joint_base_to_mors_2
+    gains:
+        joint_base_to_mors_1: { p: 100, d: 1, i: 1 }
+        joint_base_to_mors_2: { p: 100, d: 1, i: 1 }
+
+# Per-joint PID gains for gazebo_ros_control. EffortJointInterface
+# transmissions need these to convert commanded position → effort.
+# Arm gains as ned2_controllers.yaml; mors gains taken from Niryo's
+# w_gripper1 MoveIt sim config.
+gazebo_ros_control/pid_gains:
+    joint_1: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_2: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_3: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_4: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_5: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_6: { p: 100, d: 1, i: 1, i_clamp: 1 }
+    joint_base_to_mors_1: { p: 100, d: 1, i: 1 }
+    joint_base_to_mors_2: { p: 100, d: 1, i: 1 }

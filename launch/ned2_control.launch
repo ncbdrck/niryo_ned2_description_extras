@@ -1,0 +1,46 @@
+<launch>
+  <!--
+    Bring up ros_control for the Ned2 in Gazebo. Switches config + the
+    set of controllers to spawn based on the gripper arg:
+
+      gripper:=false (default):
+        * joint_state_controller
+        * niryo_robot_follow_joint_trajectory_controller
+        Uses ned2_controllers.yaml (arm-only PID gains).
+
+      gripper:=true:
+        * joint_state_controller
+        * niryo_robot_follow_joint_trajectory_controller
+        * gazebo_tool_commander  (effort-based, drives the mors joints)
+        Uses ned2_controllers_w_gripper.yaml (arm + mors PID gains).
+
+    The real Ned2 driver (niryo_robot_bringup) brings up the same arm
+    controller name; the gripper side is bridged on real hardware by
+    niryo_robot_tools_commander, which speaks ToolCommand to OPEN /
+    CLOSE the gripper. For PnP RL training in sim, the tools_commander
+    node still needs to run separately on top of this launch (or the
+    env can talk to gazebo_tool_commander directly — TBD in Phase B).
+  -->
+
+  <arg name="gripper" default="false"/>
+
+  <!-- Load the right YAML. -->
+  <rosparam command="load"
+            file="$(find niryo_ned2_description_extras)/config/ned2_controllers.yaml"
+            unless="$(arg gripper)"/>
+  <rosparam command="load"
+            file="$(find niryo_ned2_description_extras)/config/ned2_controllers_w_gripper.yaml"
+            if="$(arg gripper)"/>
+
+  <!-- Spawn the right controller set. -->
+  <node name="controller_spawner"
+        pkg="controller_manager" type="spawner"
+        respawn="false" output="screen"
+        args="joint_state_controller niryo_robot_follow_joint_trajectory_controller"
+        unless="$(arg gripper)"/>
+  <node name="controller_spawner"
+        pkg="controller_manager" type="spawner"
+        respawn="false" output="screen"
+        args="joint_state_controller niryo_robot_follow_joint_trajectory_controller gazebo_tool_commander"
+        if="$(arg gripper)"/>
+</launch>
