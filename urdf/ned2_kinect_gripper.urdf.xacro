@@ -28,7 +28,12 @@
 <!-- Robot name MUST match Niryo's SRDF (niryo_ned2). -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="niryo_ned2">
 
-    <xacro:include filename="$(find niryo_robot_description)/urdf/ned2/niryo_ned2_gripper1_n_camera.urdf.xacro"/>
+    <!-- Local copy of Niryo's gripper URDF with a corrected joint_to_gripper
+         rpy. Upstream's "${-PI/2} 0 0" renders the gripper rotated relative
+         to the real Ned2; our copy uses "0 ${-PI/2} ${PI/2}" so it sits
+         along the tool axis. Everything else is verbatim from upstream.
+         See the local file's header for the long-term plan. -->
+    <xacro:include filename="$(find niryo_ned2_description_extras)/urdf/niryo_ned2_gripper1_n_camera_fixed.urdf.xacro"/>
 
     <xacro:include filename="$(find common_sensors)/urdf/sensors/kinect2.urdf.xacro"/>
     <xacro:kinect2 name="head_mount_kinect2" parent="world">
