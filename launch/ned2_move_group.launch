@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+  <!--
+    Wrapper that brings up Niryo's move_group under the /ned2 namespace
+    so MoveIt clients can reach /ned2/move_group/... and the env's
+    MoveitMultiros(ns="ned2") finds the right action servers.
+
+    Niryo's stock move_group.launch creates move_group at the launch
+    namespace it runs in — which is / by default — but the NED2 RL env
+    uses ns="ned2" + robot_description="ned2/robot_description". Wrap
+    the include here so we don't have to fork Niryo's launch.
+
+    Args mirror move_group.launch with one addition (gripper) that
+    picks between the standalone and gripper1 MoveIt configs.
+  -->
+
+  <arg name="hardware_version" default="ned2"/>
+  <arg name="simulation_mode" default="true"/>
+  <arg name="load_robot_description" default="false"/>
+  <arg name="gripper" default="false"/>
+
+  <group ns="ned2">
+    <include file="$(find niryo_moveit_config_standalone)/launch/move_group.launch"
+             unless="$(arg gripper)">
+      <arg name="hardware_version" value="$(arg hardware_version)"/>
+      <arg name="simulation_mode" value="$(arg simulation_mode)"/>
+      <arg name="load_robot_description" value="$(arg load_robot_description)"/>
+    </include>
+    <include file="$(find niryo_moveit_config_w_gripper1)/launch/move_group.launch"
+             if="$(arg gripper)">
+      <arg name="hardware_version" value="$(arg hardware_version)"/>
+      <arg name="simulation_mode" value="$(arg simulation_mode)"/>
+      <arg name="load_robot_description" value="$(arg load_robot_description)"/>
+    </include>
+  </group>
+</launch>

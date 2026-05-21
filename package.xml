@@ -36,4 +36,8 @@
 
   <!-- World file (xsarm_gazebo.world reused for visual consistency) -->
   <exec_depend>interbotix_xsarm_gazebo</exec_depend>
+
+  <!-- MoveIt configs (used by ned2_move_group.launch wrapper) -->
+  <exec_depend>niryo_moveit_config_standalone</exec_depend>
+  <exec_depend>niryo_moveit_config_w_gripper1</exec_depend>
 </package>
