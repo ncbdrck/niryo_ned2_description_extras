@@ -83,15 +83,15 @@ niryo_ned2_description_extras/
 ├── CMakeLists.txt
 ├── README.md
 ├── urdf/
-│   ├── ned2.urdf.xacro          # wraps niryo_ned2_gazebo.urdf.xacro
-│   │                            #   (no gripper, no built-in camera —
-│   │                            #    suits reach + push tasks)
-│   └── ned2_kinect.urdf.xacro   # + common_sensors kinect2 at RX200 pose
+│   ├── ned2.urdf.xacro                # arm only, no kinect
+│   ├── ned2_kinect.urdf.xacro         # arm + head-mount kinect2 (reach / push)
+│   └── ned2_kinect_gripper.urdf.xacro # arm + kinect + adaptive gripper + built-in wrist camera (pnp)
 ├── launch/
-│   ├── ned2_gazebo.launch       # world + table + ned2 + kinect + control
+│   ├── ned2_gazebo.launch       # world + table + ned2 + kinect + control (gripper:=false|true)
 │   └── ned2_control.launch      # joint_state + follow_joint_trajectory controllers
 └── config/
-    └── ned2_controllers.yaml    # 25 Hz loop_hz; mirrors Niryo MoveIt config
+    ├── ned2_controllers.yaml             # arm-only (6 joints, 25 Hz loop_hz)
+    └── ned2_controllers_w_gripper.yaml   # arm + gazebo_tool_commander for mors prismatic joints
 ```
 
 ## Why this exists (vs putting the URDF in `rl_environments`)
@@ -107,15 +107,6 @@ is the canonical ROS pattern.
 - **ZED2 / D405 variants** if you want to switch cameras in sim.
   RL envs currently subscribe to `/head_mount_kinect2/*` though, so
   you'd need matching subscriber changes there too.
-- **PnP sim integration**: the env currently calls
-  `move_gripper_joints("open"|"close")` which routes to
-  `/ned2/niryo_robot_tools_commander/action_server`. In sim, that
-  action server doesn't exist unless Niryo's `tool_commander_node` is
-  also launched. Two paths to resolve in Phase B:
-  1. Launch the niryo tool_commander on top of this sim, or
-  2. Adapt the env's gripper helper to talk to
-     `gazebo_tool_commander/follow_joint_trajectory` directly when
-     in sim.
 - **Cube spawn**: this package doesn't spawn a cube — the RL env's
   reset path calls `spawn_cube_in_gazebo("red_cube")`, so the world
   must be cube-free. `interbotix_xsarm_gazebo/worlds/xsarm_gazebo.world`

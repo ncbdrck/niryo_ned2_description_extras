@@ -17,9 +17,9 @@
     The real Ned2 driver (niryo_robot_bringup) brings up the same arm
     controller name; the gripper side is bridged on real hardware by
     niryo_robot_tools_commander, which speaks ToolCommand to OPEN /
-    CLOSE the gripper. For PnP RL training in sim, the tools_commander
-    node still needs to run separately on top of this launch (or the
-    env can talk to gazebo_tool_commander directly — TBD in Phase B).
+    CLOSE the gripper. In sim, the RL env publishes directly to
+    /gazebo_tool_commander/follow_joint_trajectory — no
+    tools_commander_node needed on top of this launch.
   -->
 
   <arg name="gripper" default="false"/>
