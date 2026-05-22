@@ -94,23 +94,15 @@ niryo_ned2_description_extras/
     └── ned2_controllers_w_gripper.yaml   # arm + gazebo_tool_commander for mors prismatic joints
 ```
 
-## Why this exists (vs putting the URDF in `rl_environments`)
+## Why this exists
 
-Catkin doesn't allow nested packages. Dropping URDFs / meshes / launch
-files into `rl_environments/` works but bloats an RL-focused package
-and prevents reusing the description without pulling in SB3 +
-sb3_ros_support + the full task-env tree. Separate description package
-is the canonical ROS pattern.
+Separate description package keeps URDF / meshes / launch files
+reusable independent of the RL stack. Standard ROS pattern.
 
-## Open items / TODOs
-
-- **ZED2 / D405 variants** if you want to switch cameras in sim.
-  RL envs currently subscribe to `/head_mount_kinect2/*` though, so
-  you'd need matching subscriber changes there too.
-- **Cube spawn**: this package doesn't spawn a cube — the RL env's
-  reset path calls `spawn_cube_in_gazebo("red_cube")`, so the world
-  must be cube-free. `interbotix_xsarm_gazebo/worlds/xsarm_gazebo.world`
-  is cube-free; if you swap worlds, double-check.
+The cube is not spawned by this package — the RL env's reset path
+calls `spawn_cube_in_gazebo("red_cube")`, so the world must be
+cube-free. `interbotix_xsarm_gazebo/worlds/xsarm_gazebo.world` is
+cube-free by default; double-check if you swap worlds.
 
 ## Contact
 
